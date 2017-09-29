@@ -15,12 +15,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Cache a random value for a key.
+ * Cache a random value for a serializable java object used as key.
  *
- * <p>If no key is given, select a random one.You can choose a key space size for random keys with
- * the key_space_size parameter.
+ * This handler demonstrates mapping human readable key to actual encoded key stored in Memcache,
+ * the encoded key is same as encoded by App Engine Memcache API.
  *
- * <p>If 'times' is specified, repeat the operation that number of times.
+ * This handler also demonatrates logging such keys in RPC failures so that the key can be
+ * correlated to external monitoring source such as keys returned in hotkey API.
  */
 public final class SetServlet extends HttpServlet {
   private static final Logger logger = Logger.getLogger(SetServlet.class.getName());
@@ -36,15 +37,17 @@ public final class SetServlet extends HttpServlet {
     int iterationCount = reader.readIterationCount();
     for (int i = 0; i < iterationCount; ++i) {
       java.io.Serializable key = new java.util.Date();
-      writer.write(String.format("key=%s, encodedKey=%s\n", key, getEncodedKey(key)));
+      String encodedKey = getEncodedKey(key);
+      writer.write(String.format("key=%s, encodedKey=%s\n", key, encodedKey));
       String value = MemcacheValues.random(valueSizeRange);
       try {
         boolean result = memcache.put(key, value, null, SetPolicy.SET_ALWAYS);
+        // This is intenally to test logging of the key, reverse the logic when logging on failures.
         if (result) {
-          logger.info(String.format("Log put failure for encodedKey %s\n", getEncodedKey(key)));
+          logger.info(String.format("Log put failure for key=%s, encodedKey=%s\n", key, encodedKey));
         }
       } catch (Exception e) {
-        logger.severe(String.format("Memcache put failure for key %s\n", key));
+        logger.severe(String.format("Memcache put failure for key=%s, encodedKey=%s\n", key, encodedKey));
         writer.fail();
         return;
       }
