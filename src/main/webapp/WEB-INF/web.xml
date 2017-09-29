@@ -1,0 +1,20 @@
+<web-app xmlns="http://java.sun.com/xml/ns/javaee" version="2.5">
+
+  <servlet>
+    <servlet-name>compatLoadTest</servlet-name>
+    <servlet-class>com.google.cloud.cache.apps.loadtest.CompatLoadTestServlet</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>set</servlet-name>
+    <servlet-class>com.google.cloud.cache.apps.loadtest.SetServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>set</servlet-name>
+    <url-pattern>/set</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>compatLoadTest</servlet-name>
+    <url-pattern>/compatloadtest</url-pattern>
+  </servlet-mapping>
+
+</web-app>
