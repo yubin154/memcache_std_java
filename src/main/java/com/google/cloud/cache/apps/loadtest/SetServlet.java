@@ -5,7 +5,7 @@ import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheService.SetPolicy;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
 import com.google.common.collect.Range;
-import com.google.protobuf.ByteString;
+import com.google.common.io.BaseEncoding;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.io.IOException;
@@ -35,8 +35,9 @@ public final class SetServlet extends HttpServlet {
 
     Range<Integer> valueSizeRange = reader.readValueSizeRange();
     int iterationCount = reader.readIterationCount();
+    String key = reader.readKey();
     for (int i = 0; i < iterationCount; ++i) {
-      java.io.Serializable key = new java.util.Date();
+      //java.io.Serializable key = new java.util.Date();
       String encodedKey = getEncodedKey(key);
       writer.write(String.format("key=%s, encodedKey=%s\n", key, encodedKey));
       String value = MemcacheValues.random(valueSizeRange);
@@ -57,6 +58,6 @@ public final class SetServlet extends HttpServlet {
 
   static String getEncodedKey(java.io.Serializable key)
     throws UnsupportedEncodingException, IOException {
-      return ByteString.copyFrom(MemcacheSerialization.makePbKey(key)).toString("UTF-8");
+      return BaseEncoding.base64().encode(MemcacheSerialization.makePbKey(key));
   }
 }
